@@ -88,7 +88,7 @@ message ListEntriesResponse {
 
 message GetEntryRequest {
     // Required. ID of the entry to get.
-    string id = 1;
+    spire.api.types.Entry entry = 1;
 
     // An output mask indicating the entry fields set in the response.
     spire.api.types.EntryMask output_mask = 2;
