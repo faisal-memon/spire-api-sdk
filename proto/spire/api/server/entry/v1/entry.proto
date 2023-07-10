@@ -46,6 +46,11 @@ service Entry {
     // The caller must present an active agent X509-SVID. See the Agent
     // AttestAgent/RenewAgent RPCs.
     rpc GetAuthorizedEntries(GetAuthorizedEntriesRequest) returns (GetAuthorizedEntriesResponse);
+
+    // List the cached entries from the server
+    //
+    // The caller must be local or present an admin X509-SVID.
+    rpc ListCachedEntries(ListCachedEntriesRequest) returns (ListCachedEntriesResponse);
 }
 
 message CountEntriesRequest {
@@ -175,4 +180,26 @@ message GetAuthorizedEntriesRequest {
 message GetAuthorizedEntriesResponse {
     // The authorized entries.
     repeated spire.api.types.Entry entries = 1;
+}
+
+message ListCachedEntriesRequest {
+    // An output mask indicating which fields are set in the response.
+    spire.api.types.EntryMask output_mask = 1;
+
+    // The maximum number of results to return. The server may further
+    // constrain this value, or if zero, choose its own.
+    int32 page_size = 2;
+
+    // The next_page_token value returned from a previous request, if any.
+    string page_token = 3;
+}
+
+message ListCachedEntriesResponse {
+    // The list of entries.
+    repeated spire.api.types.Entry entries = 1;
+
+    // The page token for the next request. Empty if there are no more results.
+    // This field should be checked by clients even when a page_size was not
+    // requested, since the server may choose its own (see page_size).
+    string next_page_token = 2;
 }

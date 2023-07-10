@@ -47,6 +47,10 @@ type EntryClient interface {
 	// The caller must present an active agent X509-SVID. See the Agent
 	// AttestAgent/RenewAgent RPCs.
 	GetAuthorizedEntries(ctx context.Context, in *GetAuthorizedEntriesRequest, opts ...grpc.CallOption) (*GetAuthorizedEntriesResponse, error)
+	// List the cached entries from the server
+	//
+	// The caller must be local or present an admin X509-SVID.
+	ListCachedEntries(ctx context.Context, in *ListCachedEntriesRequest, opts ...grpc.CallOption) (*ListCachedEntriesResponse, error)
 }
 
 type entryClient struct {
@@ -120,6 +124,15 @@ func (c *entryClient) GetAuthorizedEntries(ctx context.Context, in *GetAuthorize
 	return out, nil
 }
 
+func (c *entryClient) ListCachedEntries(ctx context.Context, in *ListCachedEntriesRequest, opts ...grpc.CallOption) (*ListCachedEntriesResponse, error) {
+	out := new(ListCachedEntriesResponse)
+	err := c.cc.Invoke(ctx, "/spire.api.server.entry.v1.Entry/ListCachedEntries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EntryServer is the server API for Entry service.
 // All implementations must embed UnimplementedEntryServer
 // for forward compatibility
@@ -153,6 +166,10 @@ type EntryServer interface {
 	// The caller must present an active agent X509-SVID. See the Agent
 	// AttestAgent/RenewAgent RPCs.
 	GetAuthorizedEntries(context.Context, *GetAuthorizedEntriesRequest) (*GetAuthorizedEntriesResponse, error)
+	// List the cached entries from the server
+	//
+	// The caller must be local or present an admin X509-SVID.
+	ListCachedEntries(context.Context, *ListCachedEntriesRequest) (*ListCachedEntriesResponse, error)
 	mustEmbedUnimplementedEntryServer()
 }
 
@@ -180,6 +197,9 @@ func (UnimplementedEntryServer) BatchDeleteEntry(context.Context, *BatchDeleteEn
 }
 func (UnimplementedEntryServer) GetAuthorizedEntries(context.Context, *GetAuthorizedEntriesRequest) (*GetAuthorizedEntriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAuthorizedEntries not implemented")
+}
+func (UnimplementedEntryServer) ListCachedEntries(context.Context, *ListCachedEntriesRequest) (*ListCachedEntriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCachedEntries not implemented")
 }
 func (UnimplementedEntryServer) mustEmbedUnimplementedEntryServer() {}
 
@@ -320,6 +340,24 @@ func _Entry_GetAuthorizedEntries_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Entry_ListCachedEntries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCachedEntriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntryServer).ListCachedEntries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/spire.api.server.entry.v1.Entry/ListCachedEntries",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntryServer).ListCachedEntries(ctx, req.(*ListCachedEntriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Entry_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "spire.api.server.entry.v1.Entry",
 	HandlerType: (*EntryServer)(nil),
@@ -351,6 +389,10 @@ var _Entry_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAuthorizedEntries",
 			Handler:    _Entry_GetAuthorizedEntries_Handler,
+		},
+		{
+			MethodName: "ListCachedEntries",
+			Handler:    _Entry_ListCachedEntries_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
